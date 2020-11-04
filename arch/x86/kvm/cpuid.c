@@ -29,6 +29,8 @@
  * aligned to sizeof(unsigned long) because it's not accessed via bitops.
  */
 u32 kvm_cpu_caps[NCAPINTS] __read_mostly;
+atomic_t total_exits;
+EXPORT_SYMBOL_GPL(total_exits);
 EXPORT_SYMBOL_GPL(kvm_cpu_caps);
 
 static u32 xstate_required_size(u64 xstate_bv, bool compacted)
