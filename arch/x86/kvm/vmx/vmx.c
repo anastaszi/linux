@@ -223,6 +223,10 @@ static const struct {
 #define L1D_CACHE_ORDER 4
 static void *vmx_l1d_flush_pages;
 
+uint64_t processing_time_start, processing_time_end;
+extern atomic_t total_exits ;
+extern atomic64_t total_time ;
+
 static int vmx_setup_l1d_flush(enum vmx_l1d_flush_state l1tf)
 {
 	struct page *page;
@@ -5934,6 +5938,8 @@ static int vmx_handle_exit(struct kvm_vcpu *vcpu, fastpath_t exit_fastpath)
 	u32 exit_reason = vmx->exit_reason;
 	u32 vectoring_info = vmx->idt_vectoring_info;
 	atomic_inc(&total_exits);
+	int result;
+	processing_time_start=rdtsc();
 
 	/*
 	 * Flush logged GPAs PML buffer, this will make dirty_bitmap more
@@ -6047,26 +6053,56 @@ static int vmx_handle_exit(struct kvm_vcpu *vcpu, fastpath_t exit_fastpath)
 	if (exit_reason >= kvm_vmx_max_exit_handlers)
 		goto unexpected_vmexit;
 #ifdef CONFIG_RETPOLINE
-	if (exit_reason == EXIT_REASON_MSR_WRITE)
-		return kvm_emulate_wrmsr(vcpu);
-	else if (exit_reason == EXIT_REASON_PREEMPTION_TIMER)
-		return handle_preemption_timer(vcpu);
-	else if (exit_reason == EXIT_REASON_INTERRUPT_WINDOW)
-		return handle_interrupt_window(vcpu);
-	else if (exit_reason == EXIT_REASON_EXTERNAL_INTERRUPT)
-		return handle_external_interrupt(vcpu);
-	else if (exit_reason == EXIT_REASON_HLT)
-		return kvm_emulate_halt(vcpu);
-	else if (exit_reason == EXIT_REASON_EPT_MISCONFIG)
-		return handle_ept_misconfig(vcpu);
+	if (exit_reason == EXIT_REASON_MSR_WRITE) {
+		result = kvm_emulate_wrmsr(vcpu);
+		processing_time_end = rdtsc();
+		atomic64_add(processing_time_end - processing_time_start,&total_time);
+		return result;
+	}
+	else if (exit_reason == EXIT_REASON_PREEMPTION_TIMER) {
+		result = handle_preemption_timer(vcpu);
+		processing_time_end = rdtsc();
+		atomic64_add(processing_time_end - processing_time_start,&total_time);
+		return result;
+	}
+	else if (exit_reason == EXIT_REASON_INTERRUPT_WINDOW) {
+		result = handle_interrupt_window(vcpu);
+		processing_time_end = rdtsc();
+		atomic64_add(processing_time_end - processing_time_start,&total_time);
+		return result;
+	}
+	else if (exit_reason == EXIT_REASON_EXTERNAL_INTERRUPT) {
+		result = handle_external_interrupt(vcpu);
+		processing_time_end = rdtsc();
+		atomic64_add(processing_time_end - processing_time_start,&total_time);
+		return result;
+	}
+	else if (exit_reason == EXIT_REASON_HLT) {
+		result = kvm_emulate_halt(vcpu);
+		processing_time_end = rdtsc();
+		atomic64_add(processing_time_end - processing_time_start,&total_time);
+		return result;
+	}
+	else if (exit_reason == EXIT_REASON_EPT_MISCONFIG) {
+		result = handle_ept_misconfig(vcpu);
+		processing_time_end = rdtsc();
+		atomic64_add(processing_time_end - processing_time_start,&total_time);
+		return result;
+	}
 #endif
 
 	exit_reason = array_index_nospec(exit_reason,
 					 kvm_vmx_max_exit_handlers);
 	if (!kvm_vmx_exit_handlers[exit_reason])
 		goto unexpected_vmexit;
+		result = kvm_vmx_exit_handlers[exit_reason](vcpu);
 
-	return kvm_vmx_exit_handlers[exit_reason](vcpu);
+		processing_time_end= rdtsc(); // getting time stamp counter after exit is handled.
+
+		atomic64_add(processing_time_end-processing_time_start,&total_time); // adding each exit handling time to total time for all exit.
+		// get_totalexit(&total_exits);
+		// get_totaltime(&total_time);
+		return result;
 
 unexpected_vmexit:
 	vcpu_unimpl(vcpu, "vmx: unexpected exit reason 0x%x\n", exit_reason);

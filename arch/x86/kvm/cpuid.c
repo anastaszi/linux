@@ -30,7 +30,11 @@
  */
 u32 kvm_cpu_caps[NCAPINTS] __read_mostly;
 atomic_t total_exits;
+atomic64_t total_time;
 EXPORT_SYMBOL_GPL(total_exits);
+EXPORT_SYMBOL_GPL(total_time);
+
+
 EXPORT_SYMBOL_GPL(kvm_cpu_caps);
 
 static u32 xstate_required_size(u64 xstate_bv, bool compacted)
@@ -1111,11 +1115,29 @@ int kvm_emulate_cpuid(struct kvm_vcpu *vcpu)
 	eax = kvm_rax_read(vcpu);
 	ecx = kvm_rcx_read(vcpu);
 
-	kvm_cpuid(vcpu, &eax, &ebx, &ecx, &edx, false);
 	if (eax == 0x4fffffff) {
 		eax = atomic_read(&total_exits);
 		printk(KERN_INFO "CPUID: 0x4fffffff leaf");
 		printk("%d", eax);
+		ebx = (atomic64_read(&total_time) >> 32);
+		ecx = (atomic64_read(&total_time) & 0xffffffff); //(low 32 bit)
+		printk(KERN_INFO "HELLO WORLD FROM 0x4fffffff leaf");
+		printk(KERN_INFO "Total time");
+		printk("%lld", atomic64_read(&total_time));
+		printk(KERN_INFO "Total exits");
+		printk("%d", atomic_read(&total_exits));
+		printk(KERN_INFO "High 32 bits of total cycles in ebx");
+		printk("%lld", (atomic64_read(&total_time) >> 32));
+		printk(KERN_INFO "low 32 bits of total cycles in ecx");
+		printk("%lld",(atomic64_read(&total_time) & 0xffffffff));
+
+		//printk("\n %d", total_exits);
+	}
+	else{
+		kvm_cpuid(vcpu, &eax, &ebx, &ecx, &edx, false);
+
+	// printk("%lld", atomic64_read(&total_time));
+	// printk("%d", atomic_read(&total_exits));
 	}
 
 	kvm_rax_write(vcpu, eax);
