@@ -6093,16 +6093,17 @@ static int vmx_handle_exit(struct kvm_vcpu *vcpu, fastpath_t exit_fastpath)
 
 	exit_reason = array_index_nospec(exit_reason,
 					 kvm_vmx_max_exit_handlers);
-	if (!kvm_vmx_exit_handlers[exit_reason])
+	if (!kvm_vmx_exit_handlers[exit_reason]) {
 		goto unexpected_vmexit;
-		result = kvm_vmx_exit_handlers[exit_reason](vcpu);
+	}
 
-		processing_time_end= rdtsc(); // getting time stamp counter after exit is handled.
+	result = kvm_vmx_exit_handlers[exit_reason](vcpu);
 
-		atomic64_add(processing_time_end-processing_time_start,&total_time); // adding each exit handling time to total time for all exit.
+	processing_time_end= rdtsc(); // getting time stamp counter after exit is handled.
+	atomic64_add(processing_time_end-processing_time_start,&total_time); // adding each exit handling time to total time for all exit.
 		// get_totalexit(&total_exits);
 		// get_totaltime(&total_time);
-		return result;
+	return result;
 
 unexpected_vmexit:
 	vcpu_unimpl(vcpu, "vmx: unexpected exit reason 0x%x\n", exit_reason);
