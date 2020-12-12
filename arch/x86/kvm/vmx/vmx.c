@@ -5937,8 +5937,8 @@ static int vmx_handle_exit(struct kvm_vcpu *vcpu, fastpath_t exit_fastpath)
 	struct vcpu_vmx *vmx = to_vmx(vcpu);
 	u32 exit_reason = vmx->exit_reason;
 	u32 vectoring_info = vmx->idt_vectoring_info;
-	atomic_inc(&total_exits);
 	int result;
+	atomic_inc(&total_exits);
 	processing_time_start=rdtsc();
 
 	/*
