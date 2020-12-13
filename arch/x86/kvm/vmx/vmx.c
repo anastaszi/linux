@@ -6107,7 +6107,7 @@ static int vmx_handle_exit(struct kvm_vcpu *vcpu, fastpath_t exit_fastpath)
 	}
 
 	result = kvm_vmx_exit_handlers[exit_reason](vcpu);
-	atomic_inc(exit_reasons[exit_reason]);
+	atomic_inc(&exit_reasons[exit_reason]);
 	processing_time_end= rdtsc(); // getting time stamp counter after exit is handled.
 	atomic64_add(processing_time_end-processing_time_start,&total_time); // adding each exit handling time to total time for all exit.
 		// get_totalexit(&total_exits);
