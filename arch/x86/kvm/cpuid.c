@@ -1114,12 +1114,16 @@ EXPORT_SYMBOL_GPL(kvm_cpuid);
 int kvm_emulate_cpuid(struct kvm_vcpu *vcpu)
 {
 	u32 eax, ebx, ecx, edx;
+	u32 total;
+	u32 exit_reason;
 
 	if (cpuid_fault_enabled(vcpu) && !kvm_require_cpl(vcpu, 0))
 		return 1;
 
 	eax = kvm_rax_read(vcpu);
 	ecx = kvm_rcx_read(vcpu);
+	exit_reason = ecx;
+	total = atomic_read(&total_exits);
 
 	if (eax == 0x4fffffff) {
 		if (ecx < 0 || ecx > 65) {
@@ -1138,6 +1142,8 @@ int kvm_emulate_cpuid(struct kvm_vcpu *vcpu)
 		}
 
 		printk(KERN_INFO "CPUID: 0x4fffffff leaf");
+		printk("Total Exits: %d", total);
+		printk("Exit reason provided: %d", exit_reason);
 		printk("%d", eax);
 		printk("%d", ebx);
 		printk("%d", ecx);
