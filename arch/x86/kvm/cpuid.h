@@ -10,6 +10,9 @@
 extern u32 kvm_cpu_caps[NCAPINTS] __read_mostly;
 extern atomic_t total_exits;
 extern atomic64_t total_time;
+extern atomic_t exits_to_return;
+extern atomic_t exit_reasons[66];
+
 void kvm_set_cpu_caps(void);
 
 void kvm_update_cpuid_runtime(struct kvm_vcpu *vcpu);

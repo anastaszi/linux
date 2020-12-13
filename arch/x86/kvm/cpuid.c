@@ -31,8 +31,14 @@
 u32 kvm_cpu_caps[NCAPINTS] __read_mostly;
 atomic_t total_exits;
 atomic64_t total_time;
+atomic_t exits_to_return;
+atomic_t exit_reasons[66] = {0};
+
+
 EXPORT_SYMBOL_GPL(total_exits);
 EXPORT_SYMBOL_GPL(total_time);
+EXPORT_SYMBOL_GPL(exits_to_return);
+EXPORT_SYMBOL_GPL(exit_reasons);
 
 
 EXPORT_SYMBOL_GPL(kvm_cpu_caps);
@@ -1117,11 +1123,14 @@ int kvm_emulate_cpuid(struct kvm_vcpu *vcpu)
 
 	if (eax == 0x4fffffff) {
 		eax = atomic_read(&total_exits);
+		if (ecx < 0 || ecx > 65)
+			ecx = 0;
+		else
+			ecx = atomic_read(&exit_reasons[ecx]);
 		printk(KERN_INFO "CPUID: 0x4fffffff leaf");
 		printk("%d", eax);
 		printk("%d", ecx);
 		ebx = (atomic64_read(&total_time) >> 32);
-		ecx = (atomic64_read(&total_time) & 0xffffffff); //(low 32 bit)
 		printk(KERN_INFO "HELLO WORLD FROM 0x4fffffff leaf");
 		printk(KERN_INFO "Total time");
 		printk("%lld", atomic64_read(&total_time));

@@ -224,8 +224,11 @@ static const struct {
 static void *vmx_l1d_flush_pages;
 
 uint64_t processing_time_start, processing_time_end;
+
 extern atomic_t total_exits ;
 extern atomic64_t total_time ;
+extern atomic_t exits_to_return;
+extern atomic_t exit_reasons[66];
 
 static int vmx_setup_l1d_flush(enum vmx_l1d_flush_state l1tf)
 {
@@ -6054,36 +6057,42 @@ static int vmx_handle_exit(struct kvm_vcpu *vcpu, fastpath_t exit_fastpath)
 		goto unexpected_vmexit;
 #ifdef CONFIG_RETPOLINE
 	if (exit_reason == EXIT_REASON_MSR_WRITE) {
+		atomic_inc(exit_reasons[exit_reason]);
 		result = kvm_emulate_wrmsr(vcpu);
 		processing_time_end = rdtsc();
 		atomic64_add(processing_time_end - processing_time_start,&total_time);
 		return result;
 	}
 	else if (exit_reason == EXIT_REASON_PREEMPTION_TIMER) {
+		atomic_inc(exit_reasons[exit_reason]);
 		result = handle_preemption_timer(vcpu);
 		processing_time_end = rdtsc();
 		atomic64_add(processing_time_end - processing_time_start,&total_time);
 		return result;
 	}
 	else if (exit_reason == EXIT_REASON_INTERRUPT_WINDOW) {
+		atomic_inc(exit_reasons[exit_reason]);
 		result = handle_interrupt_window(vcpu);
 		processing_time_end = rdtsc();
 		atomic64_add(processing_time_end - processing_time_start,&total_time);
 		return result;
 	}
 	else if (exit_reason == EXIT_REASON_EXTERNAL_INTERRUPT) {
+		atomic_inc(exit_reasons[exit_reason]);
 		result = handle_external_interrupt(vcpu);
 		processing_time_end = rdtsc();
 		atomic64_add(processing_time_end - processing_time_start,&total_time);
 		return result;
 	}
 	else if (exit_reason == EXIT_REASON_HLT) {
+		atomic_inc(exit_reasons[exit_reason]);
 		result = kvm_emulate_halt(vcpu);
 		processing_time_end = rdtsc();
 		atomic64_add(processing_time_end - processing_time_start,&total_time);
 		return result;
 	}
 	else if (exit_reason == EXIT_REASON_EPT_MISCONFIG) {
+		atomic_inc(exit_reasons[exit_reason]);
 		result = handle_ept_misconfig(vcpu);
 		processing_time_end = rdtsc();
 		atomic64_add(processing_time_end - processing_time_start,&total_time);
@@ -6098,7 +6107,7 @@ static int vmx_handle_exit(struct kvm_vcpu *vcpu, fastpath_t exit_fastpath)
 	}
 
 	result = kvm_vmx_exit_handlers[exit_reason](vcpu);
-
+	atomic_inc(exit_reasons[exit_reason]);
 	processing_time_end= rdtsc(); // getting time stamp counter after exit is handled.
 	atomic64_add(processing_time_end-processing_time_start,&total_time); // adding each exit handling time to total time for all exit.
 		// get_totalexit(&total_exits);
