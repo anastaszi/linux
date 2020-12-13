@@ -1125,16 +1125,16 @@ int kvm_emulate_cpuid(struct kvm_vcpu *vcpu)
 	exit_reason = ecx;
 	total = atomic_read(&total_exits);
 
-	if (eax == 0x4fffffff) {
-		if (ecx < 0 || ecx > 65) {
+	if (eax == 0x4ffffffe) {
+		if (ecx < 0 || ecx > 68 || ecx == 35 || ecx == 38 || ecx == 42 || ecx == 65) {
 			eax = 0;
 			ebx = 0;
 			ecx = 0;
+			edx =  0xFFFFFFFF;
 		}
 		else {
-			eax = atomic_read(&exit_reasons[ecx]);
+			eax = atomic_read(&exit_reasons[exit_reason]);
 			if (eax == 0) {
-				eax = 0;
 				ebx = 0;
 				ecx = 0;
 				edx = 0;
@@ -1148,18 +1148,6 @@ int kvm_emulate_cpuid(struct kvm_vcpu *vcpu)
 		printk("%d", ebx);
 		printk("%d", ecx);
 		printk("%d", edx);
-		// ebx = (atomic64_read(&total_time) >> 32);
-	/*	printk(KERN_INFO " 0x4fffffff leaf");
-		printk(KERN_INFO "Total time");
-		printk("%lld", atomic64_read(&total_time));
-		printk(KERN_INFO "Total exits");
-		printk("%d", atomic_read(&total_exits));
-		printk(KERN_INFO "High 32 bits of total cycles in ebx");
-		printk("%lld", (atomic64_read(&total_time) >> 32));
-		printk(KERN_INFO "low 32 bits of total cycles in ecx");
-		printk("%lld",(atomic64_read(&total_time) & 0xffffffff)); */
-
-		//printk("\n %d", total_exits);
 	}
 	else{
 		kvm_cpuid(vcpu, &eax, &ebx, &ecx, &edx, false);
