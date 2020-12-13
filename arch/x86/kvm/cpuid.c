@@ -1119,7 +1119,7 @@ int kvm_emulate_cpuid(struct kvm_vcpu *vcpu)
 		eax = atomic_read(&total_exits);
 		printk(KERN_INFO "CPUID: 0x4fffffff leaf");
 		printk("%d", eax);
-		printf("%d", eac);
+		printk("%d", ecx);
 		ebx = (atomic64_read(&total_time) >> 32);
 		ecx = (atomic64_read(&total_time) & 0xffffffff); //(low 32 bit)
 		printk(KERN_INFO "HELLO WORLD FROM 0x4fffffff leaf");
