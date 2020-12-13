@@ -6057,42 +6057,42 @@ static int vmx_handle_exit(struct kvm_vcpu *vcpu, fastpath_t exit_fastpath)
 		goto unexpected_vmexit;
 #ifdef CONFIG_RETPOLINE
 	if (exit_reason == EXIT_REASON_MSR_WRITE) {
-		atomic_inc(exit_reasons[exit_reason]);
+		atomic_inc(&(exit_reasons[exit_reason]));
 		result = kvm_emulate_wrmsr(vcpu);
 		processing_time_end = rdtsc();
 		atomic64_add(processing_time_end - processing_time_start,&total_time);
 		return result;
 	}
 	else if (exit_reason == EXIT_REASON_PREEMPTION_TIMER) {
-		atomic_inc(exit_reasons[exit_reason]);
+		atomic_inc(&(exit_reasons[exit_reason]));
 		result = handle_preemption_timer(vcpu);
 		processing_time_end = rdtsc();
 		atomic64_add(processing_time_end - processing_time_start,&total_time);
 		return result;
 	}
 	else if (exit_reason == EXIT_REASON_INTERRUPT_WINDOW) {
-		atomic_inc(exit_reasons[exit_reason]);
+		atomic_inc(&(exit_reasons[exit_reason]));
 		result = handle_interrupt_window(vcpu);
 		processing_time_end = rdtsc();
 		atomic64_add(processing_time_end - processing_time_start,&total_time);
 		return result;
 	}
 	else if (exit_reason == EXIT_REASON_EXTERNAL_INTERRUPT) {
-		atomic_inc(exit_reasons[exit_reason]);
+		atomic_inc(&(exit_reasons[exit_reason]));
 		result = handle_external_interrupt(vcpu);
 		processing_time_end = rdtsc();
 		atomic64_add(processing_time_end - processing_time_start,&total_time);
 		return result;
 	}
 	else if (exit_reason == EXIT_REASON_HLT) {
-		atomic_inc(exit_reasons[exit_reason]);
+		atomic_inc(&(exit_reasons[exit_reason]));
 		result = kvm_emulate_halt(vcpu);
 		processing_time_end = rdtsc();
 		atomic64_add(processing_time_end - processing_time_start,&total_time);
 		return result;
 	}
 	else if (exit_reason == EXIT_REASON_EPT_MISCONFIG) {
-		atomic_inc(exit_reasons[exit_reason]);
+		atomic_inc(&(exit_reasons[exit_reason]));
 		result = handle_ept_misconfig(vcpu);
 		processing_time_end = rdtsc();
 		atomic64_add(processing_time_end - processing_time_start,&total_time);
