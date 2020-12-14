@@ -228,7 +228,7 @@ uint64_t processing_time_start, processing_time_end;
 extern atomic_t total_exits ;
 extern atomic64_t total_time ;
 extern atomic_t exits_to_return;
-extern atomic_t exit_reasons[66];
+extern atomic_t exit_reasons[69];
 
 static int vmx_setup_l1d_flush(enum vmx_l1d_flush_state l1tf)
 {

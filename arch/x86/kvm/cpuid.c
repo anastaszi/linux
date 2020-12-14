@@ -32,7 +32,7 @@ u32 kvm_cpu_caps[NCAPINTS] __read_mostly;
 atomic_t total_exits;
 atomic64_t total_time;
 atomic_t exits_to_return;
-atomic_t exit_reasons[66] = {0};
+atomic_t exit_reasons[69] = {0};
 
 
 EXPORT_SYMBOL_GPL(total_exits);
