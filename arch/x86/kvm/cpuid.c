@@ -1141,7 +1141,7 @@ int kvm_emulate_cpuid(struct kvm_vcpu *vcpu)
 			}
 		}
 
-		printk(KERN_INFO "CPUID: 0x4fffffff leaf");
+		printk(KERN_INFO "CPUID: 0x4ffffffe leaf");
 		printk("Total Exits: %d", total);
 		printk("Exit reason provided: %d", exit_reason);
 		printk("%d", eax);
